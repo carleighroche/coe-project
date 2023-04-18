@@ -1,0 +1,50 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="styles.css">
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+    </head>
+    <body>
+        <h1>Greenidge Power Plant Noise </h1>
+        <h3>INFO 4260, Prof Steven Jackson</h3>
+        <h3>Carleigh Roche, Estelle Hooper, Hal Reed, Sarah Langleben</h3>
+        <div id="bitcoin activity">
+            <svg width="500", height="600"></svg>
+            <script>
+                // request data 
+                const requestData = async () => {
+                    let bitcoinActivity = await d3.csv("btc-daily.csv");
+                    console.log(bitcoinActivity);
+                    let svg = d3.select("svg#all");
+                    let width = svg.attr("width");
+                    let height = svg.attr("height");
+
+                    // x scale (date)
+                    const xExtent = d3.extent(bitcoinActivity, d=> d.date);
+                    console.log(xExtent);
+                    let xScale = d3.scaleTime()
+                        .domain(xExtent) //from data
+                        .range([10, width-10])
+                    
+                    // y scale (volume of tokens exchanged)
+                    const yExtent = d3.extent(bitcoinActivity, d=> d["volume-btc"]);
+                    let yScale = d3.scaleLinear()
+                        .domain(yExtent)
+                        .range([10, height-10]);
+
+                    bitcoinActivity.forEach((d, i) => {
+                        svg.append("circle")
+                            .attr("cx", xScale(d['date']))
+                            .attr("cy", yScale(d['volume-btc']))
+                            .attr('r', 2)
+                            .style('fill', 'blue');
+                    });
+                    };
+
+                requestData();
+            </script>
+        </div>
+        <div id="bubble graph">
+
+        </div>
+    </body>
+</html>
