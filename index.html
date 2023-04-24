@@ -16,6 +16,8 @@
                 const requestData = async () => {
                     let bitcoinActivity = await d3.csv("btc-daily.csv");
                     console.log(bitcoinActivity);
+
+                    // set up svg area
                     let svg = d3.select("svg");
                     let width = svg.attr("width");
                     let height = svg.attr("height");
@@ -26,13 +28,13 @@
                         var date = new Date(d['date']);
                         dates.push(date);    
                     });
-                    // console.log(dates);
+
                     const xExtent = d3.extent(bitcoinActivity, d=> new Date(d.date));
                     console.log(xExtent);
 
                     let xScale = d3.scaleTime()
                         .domain(xExtent) //from data
-                        .range([10, width-10])
+                        .range([0, width-10])
                     
                     // y scale (volume of tokens exchanged)
                     const yExtent = d3.extent(bitcoinActivity, d => d['volume-btc']);
@@ -40,6 +42,7 @@
                     let yScale = d3.scaleLinear()
                         .domain([0, 50000])
                         .range([10, height-50]);
+
 
                     // create axes
                     let leftAxis = d3.axisLeft(yScale).tickFormat(d3.format(.0));
@@ -49,6 +52,7 @@
                     
                     let bottomAxis = d3.axisBottom(xScale);
 
+                    // line generator (to be used in path)
                     var lineGen = d3.line()
                         .x(d => xScale(new Date(d['date'])))
                         .y(d => yScale(d['volume-btc']))
@@ -61,15 +65,78 @@
                         .datum(bitcoinActivity)
                         .attr('class', 'line')
                         .attr('fill', 'none')
-                        .attr('stroke', '#52c5ff')
+                        .attr('stroke', '#47c765')
                         .attr('stroke-width', 1)
                         .attr('d', lineGen);
 
+                    // add data points
                     svg.selectAll('circle').data(bitcoinActivity).join('circle')
                         .attr("cx", d=> xScale(Date.parse(d['date'])))
                         .attr("cy", d => yScale(d['volume-btc']))
                         .attr('r', 2)
-                        .style('fill', '#52c5ff');
+                        .style('fill', '#47c765');
+
+                    // adding mouseover functionality -- IN PROGRESS
+                    let mouseGroup = svg.append('g');
+                    let xMarker = mouseGroup.append('line')
+                            .attr('id', 'xMarker')
+                            .attr('fill', 'none')
+                            .attr('stroke', 'gray')
+                            .attr('stroke-width', 1)
+                            .attr('y1', 0)
+                            .attr('y2', height)
+                            .attr('visibility', 'hidden');
+                    let valueMarker = mouseGroup.append('circle')
+                            .attr('id', 'valueMarker')
+                            .attr('fill', 'gray')
+                            .attr('stroke-width', 1)
+                            .attr('r', 2)
+                            .attr('visibility', 'hidden');
+                    let label = mouseGroup.append('text')
+                            .attr('id', 'label')
+                            .attr('visibility', 'hidden');
+
+                    let activeRegion = mouseGroup.append('rect')
+                        .attr('id', 'activeRegion')
+                        .attr('width', width)
+                        .attr('height', height)
+                        .attr('fill', 'none')
+                        .attr('pointer-events', 'all');
+
+                    activeRegion.on('mouseover', function() {
+                        xMarker.attr('visibility', 'visible');
+                        valueMarker.attr('visibility', 'visible');
+                        label.attr('visibility', 'visible');
+                    });
+                    activeRegion.on('mouseout', function() {
+                        xMarker.attr('visibility', 'hidden');
+                        valueMarker.attr('visibility', 'hidden');
+                        label.attr('visibility', 'hidden');
+                    });
+
+                    // get value Marker to point to point on the graph
+                    let findDate = d3.bisector( d => d.date ).right;
+
+                    activeRegion.on('mousemove', function(evt){
+                        let location = d3.pointer(evt);
+                        let x = location[0];
+                        let xDate = xScale.invert(x);
+                        let index = findDate(bitcoinActivity, xDate);
+                        let d = bitcoinActivity[index];
+
+                        let xPos = xScale(new Date(d['date']));
+                        console.log(xPos)
+                        let yPos = yScale(d['volume-btc']);
+
+                        valueMarker.attr('cx', xPos).attr('cy', yPos);
+                        xMarker.attr('x1', xPos).attr('x2', xPos);
+
+                        let txt = d['volume-usd'];
+                        label.text(txt)
+                            .attr('x', width-30)
+                            .attr('y', height - 30);
+                    });
+
 
                     };
                     
