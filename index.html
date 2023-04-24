@@ -50,25 +50,26 @@
                     let bottomAxis = d3.axisBottom(xScale);
 
                     var lineGen = d3.line()
-                        .x(d => xScale(d['date']))
+                        .x(d => xScale(new Date(d['date'])))
                         .y(d => yScale(d['volume-btc']))
                         .curve(d3.curveNatural);
-
-                    svg.selectAll('circle').data(bitcoinActivity).join('circle')
-                            .attr("cx", d=> xScale(Date.parse(d['date'])))
-                            .attr("cy", d => yScale(d['volume-btc']))
-                            .attr('r', 1)
-                            .style('fill', '#52c5ff');
 
                     svg.append('g').call(bottomAxis).attr("class", "xaxis")
                              .attr("transform",`translate(0, 580)`);
                     
-                    svg.append('path').datum(bitcoinActivity)
+                    svg.append('path')
+                        .datum(bitcoinActivity)
                         .attr('class', 'line')
                         .attr('fill', 'none')
-                        .attr('stroke', 'red')
+                        .attr('stroke', '#52c5ff')
                         .attr('stroke-width', 1)
                         .attr('d', lineGen);
+
+                    svg.selectAll('circle').data(bitcoinActivity).join('circle')
+                        .attr("cx", d=> xScale(Date.parse(d['date'])))
+                        .attr("cy", d => yScale(d['volume-btc']))
+                        .attr('r', 2)
+                        .style('fill', '#52c5ff');
 
                     };
                     
