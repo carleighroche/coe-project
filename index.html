@@ -73,7 +73,7 @@
                     svg.selectAll('circle').data(bitcoinActivity).join('circle')
                         .attr("cx", d=> xScale(Date.parse(d['date'])))
                         .attr("cy", d => yScale(d['volume-btc']))
-                        .attr('r', 2)
+                        .attr('r', 1)
                         .style('fill', '#47c765');
 
                     // adding mouseover functionality -- IN PROGRESS
@@ -82,7 +82,7 @@
                             .attr('id', 'xMarker')
                             .attr('fill', 'none')
                             .attr('stroke', 'gray')
-                            .attr('stroke-width', 1)
+                            .attr('stroke-width', 2)
                             .attr('y1', 0)
                             .attr('y2', height)
                             .attr('visibility', 'hidden');
@@ -90,7 +90,7 @@
                             .attr('id', 'valueMarker')
                             .attr('fill', 'gray')
                             .attr('stroke-width', 1)
-                            .attr('r', 2)
+                            .attr('r', 1)
                             .attr('visibility', 'hidden');
                     let label = mouseGroup.append('text')
                             .attr('id', 'label')
@@ -120,13 +120,14 @@
                     activeRegion.on('mousemove', function(evt){
                         let location = d3.pointer(evt);
                         let x = location[0];
-                        let xDate = xScale.invert(x);
+                        let xDate = new Date(xScale.invert(x));
                         let index = findDate(bitcoinActivity, xDate);
                         let d = bitcoinActivity[index];
 
                         let xPos = xScale(new Date(d['date']));
                         console.log(xPos)
                         let yPos = yScale(d['volume-btc']);
+                        console.log(yPos);
 
                         valueMarker.attr('cx', xPos).attr('cy', yPos);
                         xMarker.attr('x1', xPos).attr('x2', xPos);
