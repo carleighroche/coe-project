@@ -115,19 +115,23 @@
                     });
 
                     // get value Marker to point to point on the graph
-                    let findDate = d3.bisector( d => d.date ).right;
+                    let findDate = d3.bisector( d => d.date ).right; // THIS IS THE PROBLEM WITH MOUSEOVER
+                                                                        // index returns 0 every
 
                     activeRegion.on('mousemove', function(evt){
                         let location = d3.pointer(evt);
                         let x = location[0];
                         let xDate = new Date(xScale.invert(x));
+                        //console.log(xDate);
+
                         let index = findDate(bitcoinActivity, xDate);
+                        console.log(index);
                         let d = bitcoinActivity[index];
+                        //console.log(d);
 
                         let xPos = xScale(new Date(d['date']));
-                        console.log(xPos)
                         let yPos = yScale(d['volume-btc']);
-                        console.log(yPos);
+                        //console.log(d);
 
                         valueMarker.attr('cx', xPos).attr('cy', yPos);
                         xMarker.attr('x1', xPos).attr('x2', xPos);
